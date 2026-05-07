@@ -1,5 +1,5 @@
 from simpleai.search import SearchProblem, astar
-
+from simpleai.search.viewers import ConsoleViewer
 def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, muestras_sedimentarias):
     
     estado_inicial = (
@@ -49,32 +49,32 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             if bateria>4:    
                 for nuevaF,nuevaC in movimientos_sobremarcha:
                     if 0<=nuevaF < TAMANIO_GRILLA and 0<=nuevaC <TAMANIO_GRILLA:
-                        acciones_posibles.append("sobremarcha",(nuevaF,nuevaC))    
+                        acciones_posibles.append(("sobremarcha",(nuevaF,nuevaC)))    
             if bateria>1:   
                 #accion moverse
                 for nuevaF,nuevaC in movimientos:
                     if 0<=nuevaF < TAMANIO_GRILLA and 0<=nuevaC <TAMANIO_GRILLA:
-                        acciones_posibles.append("moverse",(nuevaF,nuevaC))
+                        acciones_posibles.append(("moverse",(nuevaF,nuevaC)))
                 #accion equipar  
                 if taladro==None:
-                    acciones_posibles.append("equipar","percutor") 
-                    acciones_posibles.append("equipar","termico")
+                    acciones_posibles.append(("equipar","percutor")) 
+                    acciones_posibles.append(("equipar","termico"))
                 if taladro=="termico":
-                    acciones_posibles.append("equipar","percutor") 
+                    acciones_posibles.append(("equipar","percutor")) 
                 else:
-                    acciones_posibles.append("equipar","termico")
+                    acciones_posibles.append(("equipar","termico"))
                 #accion depositar 
                 if almacenamiento==2 or ((len(igneas)+len(sedimentarias)==1) and (almacenamiento==1)): #indica que es la ultima bolsa     
-                    acciones_posibles.append("depositar",None)    
+                    acciones_posibles.append(("depositar",None))    
             #accion recolectar
             if bateria>3: 
                 if posicion_robot in igneas and almacenamiento<2 and taladro=="termico":
-                    acciones_posibles.append("recolectar","ignea")
+                    acciones_posibles.append(("recolectar","ignea"))
                 if posicion_robot in sedimentarias and almacenamiento<2 and taladro=="percutor" :
-                    acciones_posibles.append("recolectar","sedimentaria")     
+                    acciones_posibles.append(("recolectar","sedimentaria"))     
             #accion recargar
             if posicion_robot not in SOMBRAS: 
-                acciones_posibles.append("recargar",None)
+                acciones_posibles.append(("recargar",None))
                  
             return acciones_posibles
 
@@ -87,9 +87,13 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 lista_estado[2]=descripcion
             if nombre_accion=="recolectar":
                 if descripcion=="ignea":
-                    lista_estado[4].remove(lista_estado[0])
+                    lista_rocas_igneas= list(lista_estado[4])
+                    lista_rocas_igneas.remove(lista_estado[0])
+                    lista_estado[4] = tuple(lista_rocas_igneas)
                 else:
-                    lista_estado[5].remove(lista_estado[0])    
+                    lista_rocas_sedimentarias = list(lista_estado[5])
+                    lista_rocas_sedimentarias.remove(lista_estado[0])
+                    lista_estado[5] = tuple(lista_rocas_sedimentarias)   
             if nombre_accion=="depositar":
                 lista_estado[3]==0
             if nombre_accion=="recargar":
@@ -97,13 +101,13 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 if lista_estado[1]>20:
                     lista_estado[1]=20 #supero la bateria maxima
             lista_estado[1]-=GASTOS_BATERIA[nombre_accion]
-            return state 
+            return tuple(lista_estado) 
 
         def is_goal(self, state):
             bateria=state[1]
-            almacenamiento= state[4]
-            piedras_igneas= len(state[5])
-            piedras_sedimentarias= len(state[6])
+            almacenamiento= state[3]
+            piedras_igneas= len(state[4])
+            piedras_sedimentarias= len(state[5])
             return bateria>=0 and almacenamiento==0 and piedras_igneas==0 and piedras_sedimentarias==0
         #is_goal cuando se cumple que la bateria alcanzo, no tiene piedras almacenadas y no existen piedras por juntar. 
 
@@ -113,4 +117,33 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 return 2
             return COSTO_TIEMPO[nombre_accion]
         def heuristic(self, state):
-            return 0
+            posicion_robot,bateria,taladro,almacenamiento,igneas,sedimentarias= state
+            heuristica_valor = 0
+            cant_igneas = len(igneas)
+            cant_sed = len(sedimentarias)
+            heuristica_valor += (cant_igneas + cant_sed)*2 #tiempo de recoleccion por cada piedra es de 2 minutos
+            heuristica_valor += (cant_igneas + cant_sed) #tiempo de deposito minimo por cada piedra 1 minuto
+            heuristica_valor += (cant_igneas + cant_sed)-1 #movimientos necesarios, es -1 por si estamos encima de una
+            if cant_igneas > 0 and cant_sed > 0:
+                heuristica_valor += 1 #necesitara al menos un cambio de taladro, lo que lleva 1 minuto
+            
+            return heuristica_valor
+
+
+    problema = Ares1Problem(initial_state=estado_inicial)
+    solucion = astar(problema, graph_search=True)
+    return solucion
+
+# Ejemplo de uso para probarlo:
+if __name__ == "__main__":
+    sombra = [(1, 1), (1, 2)]
+    igneas = [(0, 4), (4, 0)]
+    sedimentarias = [(2, 2)]
+    
+    res = planear_rover((0, 0), 20, sombra, igneas, sedimentarias)
+    
+    if res:
+        print("¡Plan encontrado!")
+        for i, (accion, estado) in enumerate(res.path()):
+            print(f"Paso {i}: {accion} ")
+        print(f"Costo total: {res.cost}")
