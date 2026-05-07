@@ -86,6 +86,7 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             if nombre_accion=="equipar":
                 lista_estado[2]=descripcion
             if nombre_accion=="recolectar":
+                lista_estado[3] += 1
                 if descripcion=="ignea":
                     lista_rocas_igneas= list(lista_estado[4])
                     lista_rocas_igneas.remove(lista_estado[0])
@@ -93,7 +94,7 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 else:
                     lista_rocas_sedimentarias = list(lista_estado[5])
                     lista_rocas_sedimentarias.remove(lista_estado[0])
-                    lista_estado[5] = tuple(lista_rocas_sedimentarias)   
+                    lista_estado[5] = tuple(lista_rocas_sedimentarias) 
             if nombre_accion=="depositar":
                 lista_estado[3]==0
             if nombre_accion=="recargar":
@@ -108,7 +109,7 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             almacenamiento= state[3]
             piedras_igneas= len(state[4])
             piedras_sedimentarias= len(state[5])
-            return bateria>=0 and almacenamiento==0 and piedras_igneas==0 and piedras_sedimentarias==0
+            return bateria>0 and almacenamiento==0 and piedras_igneas==0 and piedras_sedimentarias==0
         #is_goal cuando se cumple que la bateria alcanzo, no tiene piedras almacenadas y no existen piedras por juntar. 
 
         def cost(self, state, action, state2):
