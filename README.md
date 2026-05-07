@@ -1,1 +1,1 @@
-# grupo13_catellano_ambort_ia_2026
+# grupo13_castellano_ambort_ia_2026
