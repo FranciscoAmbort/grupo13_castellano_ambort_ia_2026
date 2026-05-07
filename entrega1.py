@@ -57,10 +57,10 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                         acciones_posibles.append(("moverse",(nuevaF,nuevaC)))
                 #accion equipar  
                 if taladro==None:
-                    acciones_posibles.append(("equipar","percutor")) 
+                    acciones_posibles.append(("equipar","percusion")) 
                     acciones_posibles.append(("equipar","termico"))
                 if taladro=="termico":
-                    acciones_posibles.append(("equipar","percutor")) 
+                    acciones_posibles.append(("equipar","percusion")) 
                 else:
                     acciones_posibles.append(("equipar","termico"))
                 #accion depositar 
@@ -70,7 +70,7 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             if bateria>3: 
                 if posicion_robot in igneas and almacenamiento<2 and taladro=="termico":
                     acciones_posibles.append(("recolectar","ignea"))
-                if posicion_robot in sedimentarias and almacenamiento<2 and taladro=="percutor" :
+                if posicion_robot in sedimentarias and almacenamiento<2 and taladro=="percusion" :
                     acciones_posibles.append(("recolectar","sedimentaria"))     
             #accion recargar
             if posicion_robot not in SOMBRAS: 
@@ -131,19 +131,17 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
 
 
     problema = Ares1Problem(initial_state=estado_inicial)
+    # Recomendación: no uses el visor en los tests porque ensucia la consola
     solucion = astar(problema, graph_search=True)
-    return solucion
-
-# Ejemplo de uso para probarlo:
-if __name__ == "__main__":
-    sombra = [(1, 1), (1, 2)]
-    igneas = [(0, 4), (4, 0)]
-    sedimentarias = [(2, 2)]
     
-    res = planear_rover((0, 0), 20, sombra, igneas, sedimentarias)
-    
-    if res:
-        print("¡Plan encontrado!")
-        for i, (accion, estado) in enumerate(res.path()):
-            print(f"Paso {i}: {accion} ")
-        print(f"Costo total: {res.cost}")
+    if solucion:
+        # Los tests esperan una lista de tuplas de acciones: [('moverse', (0,1)), ...]
+        # IMPORTANTE: El primer paso del path() es (None, EstadoInicial), hay que ignorarlo.
+        plan = []
+        for accion, estado in solucion.path():
+            if accion is not None:
+                plan.append(accion)
+        return plan
+    else:
+        # Si no encontró solución, devolvemos lista vacía
+        return []
