@@ -16,7 +16,7 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                     "equipar":1,
                     "recolectar":3,
                     "depositar":1, # verificar si es depositar o entregar
-                    "recargar":0
+                    "recargar":-10
                     }
     COSTO_TIEMPO={"moverse":1,
                     "sobremarcha":1,
@@ -53,16 +53,14 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 for nuevaF,nuevaC in movimientos:
                     acciones_posibles.append(("moverse",(nuevaF,nuevaC)))
                 #accion equipar  
-                if taladro==None:
-                    acciones_posibles.append(("equipar","percusion")) 
+                if taladro!="termico":
                     acciones_posibles.append(("equipar","termico"))
-                if taladro=="termico":
+                if taladro!="percusion":
                     acciones_posibles.append(("equipar","percusion")) 
-                else:
-                    acciones_posibles.append(("equipar","termico"))
                 #accion depositar 
-                if almacenamiento==2 or ((len(igneas)+len(sedimentarias)==1) and (almacenamiento==1)): #indica que es la ultima bolsa     
-                    acciones_posibles.append(("depositar",None))    
+                if almacenamiento > 0:
+                    if almacenamiento == 2 or (len(igneas) + len(sedimentarias) == 0):
+                        acciones_posibles.append(("depositar", None))   
             #accion recolectar
             if bateria>3: 
                 if posicion_robot in igneas and almacenamiento<2 and taladro=="termico":
@@ -93,12 +91,10 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                     lista_rocas_sedimentarias.remove(lista_estado[0])
                     lista_estado[5] = tuple(lista_rocas_sedimentarias) 
             if nombre_accion=="depositar":
-                lista_estado[3]=0
-            if nombre_accion=="recargar":
-                lista_estado[1]+=10
-                if lista_estado[1]>20:
-                    lista_estado[1]=20 #supero la bateria maxima
+                lista_estado[3]=0    
             lista_estado[1]-=GASTOS_BATERIA[nombre_accion]
+            if lista_estado[1]>20:
+                lista_estado[1]=20
             return tuple(lista_estado) 
 
         def is_goal(self, state):
@@ -126,7 +122,6 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 heuristica_valor += 1 #necesitara al menos un cambio de taladro, lo que lleva 1 minuto
             
             return heuristica_valor
-
     problema = Ares1Problem(initial_state=estado_inicial)
     solucion = astar(problema, graph_search=True)
     
@@ -141,13 +136,12 @@ if __name__ == "__main__":
     sombras = [(1, 1)]
     i = [(0, 1)]
     s = [(1, 0)]
-    
+
     resultado = planear_rover(inicio, bat, sombras, i, s)
-    
+
     if resultado:
         print("¡Plan encontrado!")
         for i, accion in enumerate(resultado):
             print(f"Paso {i+1}: {accion}")
-        
     else:
         print("No se encontró solución.")
