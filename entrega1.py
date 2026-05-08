@@ -10,7 +10,6 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
         tuple(muestras_igneas),
         tuple(muestras_sedimentarias)
     )
-    TAMANIO_GRILLA= 5
     SOMBRAS = zonas_sombra
     GASTOS_BATERIA={"moverse":1,
                     "sobremarcha":4,
@@ -48,12 +47,10 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             #accion sobremarcha
             if bateria>4:    
                 for nuevaF,nuevaC in movimientos_sobremarcha:
-                    #if 0<=nuevaF < TAMANIO_GRILLA and 0<=nuevaC <TAMANIO_GRILLA:
                     acciones_posibles.append(("sobremarcha",(nuevaF,nuevaC)))    
             if bateria>1:   
                 #accion moverse
                 for nuevaF,nuevaC in movimientos:
-                    #if 0<=nuevaF < TAMANIO_GRILLA and 0<=nuevaC <TAMANIO_GRILLA:
                     acciones_posibles.append(("moverse",(nuevaF,nuevaC)))
                 #accion equipar  
                 if taladro==None:
@@ -130,3 +127,27 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             
             return heuristica_valor
 
+    problema = Ares1Problem(initial_state=estado_inicial)
+    solucion = astar(problema, graph_search=True)
+    
+    if solucion:
+        return [paso[0] for paso in solucion.path() if paso[0] is not None]
+    return []
+
+if __name__ == "__main__":
+    # Caso de prueba manual
+    inicio = (0, 0)
+    bat = 20
+    sombras = [(1, 1)]
+    i = [(0, 1)]
+    s = [(1, 0)]
+    
+    resultado = planear_rover(inicio, bat, sombras, i, s)
+    
+    if resultado:
+        print("¡Plan encontrado!")
+        for i, accion in enumerate(resultado):
+            print(f"Paso {i+1}: {accion}")
+        
+    else:
+        print("No se encontró solución.")
