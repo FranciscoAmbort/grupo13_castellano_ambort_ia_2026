@@ -115,11 +115,21 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             heuristica_valor = 0
             cant_igneas = len(igneas)
             cant_sed = len(sedimentarias)
+            
             heuristica_valor += (cant_igneas + cant_sed)*2 #tiempo de recoleccion por cada piedra es de 2 minutos
             heuristica_valor += (cant_igneas + cant_sed) #tiempo de deposito minimo por cada piedra 1 minuto
-            heuristica_valor += (cant_igneas + cant_sed)-1 #movimientos necesarios, es -1 por si estamos encima de una
-            if cant_igneas > 0 and cant_sed > 0:
-                heuristica_valor += 1 #necesitara al menos un cambio de taladro, lo que lleva 1 minuto
+
+            muestras = igneas + sedimentarias
+            if len(muestras) >= 1:
+                distancias  = []
+                for m in muestras:
+                    distancias.append(abs(posicion_robot[0] - m[0]) + abs (posicion_robot[1] - m[1]))
+                    
+                distMin = min(distancias)
+                heuristica_valor += distMin/2
+            #Buscamos la distnacia a la roca mas cercana y lo hacemos /2 porque se puede utilizar sobremarcha
+            
+
             
             return heuristica_valor
     problema = Ares1Problem(initial_state=estado_inicial)
