@@ -52,11 +52,17 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 #accion moverse
                 for nuevaF,nuevaC in movimientos:
                     acciones_posibles.append(("moverse",(nuevaF,nuevaC)))
-                #accion equipar  
-                if taladro!="termico":
-                    acciones_posibles.append(("equipar","termico"))
-                if taladro!="percusion":
-                    acciones_posibles.append(("equipar","percusion")) 
+
+                if posicion_robot in igneas:
+                    #accion equipar  
+                    if taladro!="termico":
+                        acciones_posibles.append(("equipar","termico"))
+                if posicion_robot in sedimentarias:
+                    if taladro!="percusion":
+                        acciones_posibles.append(("equipar","percusion")) 
+                
+                
+                
                 #accion depositar 
                 if almacenamiento > 0:
                     if almacenamiento == 2 or (len(igneas) + len(sedimentarias) == 0):
