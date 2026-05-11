@@ -113,11 +113,13 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
         def heuristic(self, state):
             posicion_robot,bateria,taladro,almacenamiento,igneas,sedimentarias= state
             heuristica_valor = 0
+            bateriaNecesaria = 0
             cant_igneas = len(igneas)
             cant_sed = len(sedimentarias)
             
             heuristica_valor += (cant_igneas + cant_sed)*2 #tiempo de recoleccion por cada piedra es de 2 minutos
             heuristica_valor += (cant_igneas + cant_sed) #tiempo de deposito minimo por cada piedra 1 minuto
+            heuristica_valor += almacenamiento
 
             muestras = igneas + sedimentarias
             if len(muestras) >= 1:
@@ -127,10 +129,20 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                     
                 distMin = min(distancias)
                 heuristica_valor += distMin/2
-            #Buscamos la distnacia a la roca mas cercana y lo hacemos /2 porque se puede utilizar sobremarcha
-            
+                #Buscamos la distnacia a la roca mas cercana y lo hacemos /2 porque se puede utilizar sobremarcha
 
-            
+                bateriaNecesaria += (cant_igneas + cant_sed)*GASTOS_BATERIA["recolectar"] #bateria necesaria para recolectar las piedras restantes
+                bateriaNecesaria += ((cant_igneas + cant_sed)/2)*GASTOS_BATERIA["depositar"] #bateria necesaria para depositar las piedras restantes, se hace /2 porque se pueden depositar 2 piedras juntas
+                bateriaNecesaria += distMin*GASTOS_BATERIA["moverse"] #bateria necesaria para moverse a la roca mas cercana
+
+            if cant_igneas > 0 and taladro != "termico":
+                heuristica_valor += 3
+                bateriaNecesaria += GASTOS_BATERIA["equipar"]
+            if cant_sed > 0 and taladro != "percusion":
+                heuristica_valor += 3
+                bateriaNecesaria += GASTOS_BATERIA["equipar"]
+            if bateriaNecesaria > bateria:
+                heuristica_valor += 4
             return heuristica_valor
     problema = Ares1Problem(initial_state=estado_inicial)
     solucion = astar(problema, graph_search=True)
