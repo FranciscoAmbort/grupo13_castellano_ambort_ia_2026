@@ -32,12 +32,6 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             acciones_posibles= []
             posicion_robot,bateria,taladro,almacenamiento,igneas,sedimentarias= state
             posF,posC= posicion_robot
-            movimientos=[
-                (posF-1,posC),
-                (posF+1,posC),
-                (posF,posC-1),
-                (posF,posC+1)
-            ]
             movimientos_sobremarcha=[
                 (posF-2,posC),
                 (posF+2,posC),
@@ -46,12 +40,16 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             ]
             #accion sobremarcha
             if bateria>4:    
-                for nuevaF,nuevaC in movimientos_sobremarcha:
-                    acciones_posibles.append(("sobremarcha",(nuevaF,nuevaC)))    
+                acciones_posibles.append(("sobremarcha",(posF-2,posC))) #abajo
+                acciones_posibles.append(("sobremarcha",(posF+2,posC))) #arriba
+                acciones_posibles.append(("sobremarcha",(posF,posC-2)))#izquierda
+                acciones_posibles.append(("sobremarcha",(posF,posC+2))) #derecha 
             if bateria>1:   
                 #accion moverse
-                for nuevaF,nuevaC in movimientos:
-                    acciones_posibles.append(("moverse",(nuevaF,nuevaC)))
+                acciones_posibles.append(("moverse",(posF-1,posC))) #abajo
+                acciones_posibles.append(("moverse",(posF+1,posC))) #arriba
+                acciones_posibles.append(("moverse",(posF,posC-1)))#izquierda
+                acciones_posibles.append(("moverse",(posF,posC+1))) #derecha
 
                 if posicion_robot in igneas:
                     #accion equipar  
@@ -60,9 +58,6 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 if posicion_robot in sedimentarias:
                     if taladro!="percusion":
                         acciones_posibles.append(("equipar","percusion")) 
-                
-                
-                
                 #accion depositar 
                 if almacenamiento > 0:
                     if almacenamiento == 2 or (len(igneas) + len(sedimentarias) == 0):
@@ -133,13 +128,13 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
                 for m in muestras:
                     distancias.append(abs(posicion_robot[0] - m[0]) + abs (posicion_robot[1] - m[1]))
                     
-                distMin = min(distancias)
-                heuristica_valor += distMin/2
+                distMax = max(distancias)
+                heuristica_valor += distMax/2
                 #Buscamos la distnacia a la roca mas cercana y lo hacemos /2 porque se puede utilizar sobremarcha
 
                 bateriaNecesaria += (cant_igneas + cant_sed)*GASTOS_BATERIA["recolectar"] #bateria necesaria para recolectar las piedras restantes
                 bateriaNecesaria += ((cant_igneas + cant_sed)/2)*GASTOS_BATERIA["depositar"] #bateria necesaria para depositar las piedras restantes, se hace /2 porque se pueden depositar 2 piedras juntas
-                bateriaNecesaria += distMin*GASTOS_BATERIA["moverse"] #bateria necesaria para moverse a la roca mas cercana
+                bateriaNecesaria += distMax*GASTOS_BATERIA["moverse"] #bateria necesaria para moverse a la roca mas cercana
 
             if cant_igneas > 0 and taladro != "termico":
                 heuristica_valor += 3
