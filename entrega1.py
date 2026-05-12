@@ -145,6 +145,7 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             if bateriaNecesaria > bateria:
                 heuristica_valor += 4
             return heuristica_valor
+        
     problema = Ares1Problem(initial_state=estado_inicial)
     solucion = astar(problema, graph_search=True)
     
@@ -156,9 +157,9 @@ if __name__ == "__main__":
     # Caso de prueba manual
     inicio = (0, 0)
     bat = 20
-    sombras = [(1, 1)]
-    i = [(0, 1)]
-    s = [(1, 0)]
+    sombras = [(0,1), (0,2)]
+    i = [(1, 1),(1,2)]
+    s = [(2, 3)]
 
     resultado = planear_rover(inicio, bat, sombras, i, s)
 
