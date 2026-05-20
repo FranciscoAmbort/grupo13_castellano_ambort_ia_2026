@@ -33,14 +33,14 @@ def planear_rover(rover_inicio, bateria_inicial, zonas_sombra, muestras_igneas, 
             if bateria > 1:
                 if taladro != "termico":
                     accs.append(("equipar", "termico"))
-                if taladro != "percusión":
-                    accs.append(("equipar", "percusión"))
+                if taladro != "percusion":
+                    accs.append(("equipar", "percusion"))
 
             # 3. Recolectar (2 min, 3 bat)
             if bateria > 3 and len(carga) < 2:
                 if pos in m_igneas and taladro == "termico":
                     accs.append(("recolectar", "ignea"))
-                if pos in m_sedim and taladro == "percusión":
+                if pos in m_sedim and taladro == "percusion":
                     accs.append(("recolectar", "sedimentaria"))
 
             # 4. Depositar (1 min por muestra, 1 bat)
