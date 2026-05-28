@@ -91,3 +91,18 @@ def build_camp(camp_size, habs, generators, labs, deposits, airlocks, craters):
         variables_evaluar= [hab] + [v for v in variables if v != hab]
         variables_evaluar_tupla= tuple(variables_evaluar)
         restricciones.append((variables_evaluar_tupla,modulo_habitacion_libre))    
+
+    problema = CspProblem(variables, dominios, restricciones)
+    
+    solucion = backtrack(problema)
+    
+    if solucion is None:
+        return None
+        
+    resultado_formateado = []
+    for var_name, coord in solucion.items():
+        tipo_modulo = var_name.split("_")[0]
+        fila, columna = coord
+        resultado_formateado.append((tipo_modulo, fila, columna))
+        
+    return resultado_formateado
