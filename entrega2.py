@@ -79,19 +79,15 @@ def build_camp(camp_size, habs, generators, labs, deposits, airlocks, craters):
         val1= values[0]
         val2= values[1:]
         f1,c1= val1
-        contador=0
         adyacentes= ((f1+1,c1),(f1-1,c1),(f1,c1+1),(f1,c1-1))
-        for a in adyacentes:
-            if (a in crateres_sets):
-                contador+=1
-        for f2,c2 in val2:
-            if ((f1+1 == f2 or f1-1 == f2) and c1==c2) or ((c1+1==c2 or c1-1==c2) and f1==f2):
-                contador+=1 #si encuentra algo en la posicion adyacente, devuelve False
-        if contador>3: 
-            return False
-        return True 
+        for af, ac  in adyacentes:
+            if 0 <= af < filas and 0 <= ac < columnas:
+                if (af, ac) not in crateres_sets and (af, ac) not in values:
+                    return True
+        return False
+
     
     for hab in variables_hab:
-        variables_evaluar= [hab] + variables_dep + variables_air+ variables_gen+variables_lab
+        variables_evaluar= [hab] + [v for v in variables if v != hab]
         variables_evaluar_tupla= tuple(variables_evaluar)
         restricciones.append((variables_evaluar_tupla,modulo_habitacion_libre))    
