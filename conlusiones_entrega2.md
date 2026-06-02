@@ -1,3 +1,5 @@
+IA utilizada: Geminis
+
 Luego de comparar los diferentes códigos, pudimos ver que tanto nuestra solución como la
 solución generada por la IA (GeminisPro) parten de una base de variables iguales, debido
 a que se definen exactamente el mismo conjunto y ambos aplicamos una estrategia
